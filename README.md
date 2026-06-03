@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Epoch5427/repeat/main/data/icons/hicolor/scalable/apps/io.github.Epoch5427.repeat.svg" width="128" height="128" alt="Repeat Icon">
+  <img src="data/icons/hicolor/scalable/apps/com.epoch.repeat.svg" width="128" height="128" alt="Repeat Icon">
 </p>
 
 <h1 align="center">Repeat</h1>
