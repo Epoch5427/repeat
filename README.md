@@ -22,6 +22,12 @@
   <em>The main mouse settings and timing configuration panel.</em>
 </p>
 
+<p align="center">
+  <img width="1020" height="750" alt="Screenshot From 2026-06-03 22-11-00" src="https://github.com/user-attachments/assets/98f0fae3-6ff7-4904-8ecd-8b066c96606e" />
+  <br>
+  <em>The main keyboard settings and timing configuration panel.</em>
+</p>
+
 ---
 
 ## Features
