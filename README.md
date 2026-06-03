@@ -5,7 +5,7 @@
 <h1 align="center">Repeat</h1>
 
 <p align="center">
-  <strong>A modern, high-precision, Wayland-first autoclicker and macro sequencer for Linux.</strong>
+  <strong>Wayland-First Autoclicker</strong>
 </p>
 
 <p align="center">
@@ -27,6 +27,7 @@
 ## Features
 
 - **Mouse Emulation**: Left, middle, or right clicking with single or double-click triggers. Emulate clicks at your current cursor position or map exact target coordinates.
+- **Modern GTK4 Interface**: The autoclicker comes stacked with a modern and simple GTK4 interface.
 - **Keyboard Input**: Target specific keys with action modes like "Press and Release", "Hold Key down", or "Release Key".
 - **Macro Sequencer**: 
   - Construct automated input chains mixing keys, coordinates, mouse clicks, and strings (`type:text`).
