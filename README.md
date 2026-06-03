@@ -1,6 +1,11 @@
 # Repeat
 
-A description of this project.
+Repeat is a high-performance autoclicker tool designed natively for Wayland desktops with support for global shortcuts. It permits the configuration of automated mouse clicks, keyboard shortcuts, and macro sequences.
+    Features:
+      Natively supports Wayland global shortcuts using Desktop Portals.
+      Highly precise background execution loop via kernel-level uinput emulation.
+      Integrated macro sequencer with an interactive, live timing recorder.
+      Robust coordination picker with full-screen coordinate capture.
 <img width="256" height="256" alt="io github Epoch5427 repeat" src="https://github.com/user-attachments/assets/0e89f841-0f2e-44ad-8f30-bb84c6f64657" />
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
