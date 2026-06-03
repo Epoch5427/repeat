@@ -35,7 +35,7 @@
 - **Timing Engine**: 
   - Run clickers using "Delay" (milliseconds between clicks) or "Rate" (clicks per second, minute, or hour).
   - Option to randomize interval speeds slightly to emulate human interaction.
-- **Strict Execution Limits**: Set limits based on overall loop iteration counts or strict time durations.
+- **Execution Limits**: Set limits based on overall loop iteration counts or time durations.
 - **Wayland Global Hotkeys**: Utilizes the Desktop Shortcuts Portal to safely register a global toggle shortcut (**F8**) that functions in the background on Wayland.
 
 ---
