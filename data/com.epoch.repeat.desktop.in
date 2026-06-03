@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Repeat
+Exec=repeat
+Icon=com.epoch.repeat
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=GTK;
+StartupNotify=true
+DBusActivatable=true

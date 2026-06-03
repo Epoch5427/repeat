@@ -1,0 +1,56 @@
+{
+    "id" : "com.epoch.repeat",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "50",
+    "sdk" : "org.gnome.Sdk",
+    "command" : "repeat",
+    "finish-args" : [
+        "--share=network",
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--device=all",
+        "--env=GSK_RENDERER=cairo",
+        "--talk-name=org.gnome.Shell",
+    	"--talk-name=org.freedesktop.portal.Desktop",
+    	"--talk-name=org.freedesktop.portal.Flatpak",
+    	"--filesystem=xdg-pictures",
+        "--socket=wayland"
+    ],
+    "cleanup" : [
+        "/include",
+        "/lib/pkgconfig",
+        "/man",
+        "/share/doc",
+        "/share/gtk-doc",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules" : [
+        {
+            "name" : "blueprint-compiler",
+            "buildsystem" : "meson",
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/blueprint-compiler.git",
+                    "branch" : "main",
+                    "depth" : 1
+                }
+            ]
+        },
+        "python3-evdev.json",
+        {
+            "name" : "repeat",
+            "builddir" : true,
+            "buildsystem" : "meson",
+            "sources" : [
+                {
+                    "type" : "dir",
+                    "path" : "."
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.epoch.repeat
+Exec=@bindir@/repeat --gapplication-service
