@@ -53,8 +53,7 @@ Repeat is built using Python, GTK4, Libadwaita, and Meson.
 If you want to compile the Flatpak manifest manually:
 ```bash
 flatpak-builder --user --install builddir io.github.Epoch5427.repeat.json --force-clean
-flatpak-builder<img width="1020" height="750" alt="Screenshot From 2026-06-03 21-36-46" src="https://github.com/user-attachments/assets/80e9687b-4ecf-483a-b2d8-885895edb830" />
- --run builddir io.github.Epoch5427.repeat.json repeat
+flatpak-builder --run builddir io.github.Epoch5427.repeat.json repeat
 ```
 
 ---
