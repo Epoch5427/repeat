@@ -46,6 +46,14 @@
 
 ---
 
+## Installation
+1. Download the repeat.flatpakrepo file from the releases page and then open it.
+2. You will be prompted to install the Repeat Rutoclicker Repo, simply click install.
+3. Open your flatpak software center of choice and search for Repeat.
+4. Click install.
+
+---
+
 ## Development & Building
 
 Repeat is built using Python, GTK4, Libadwaita, and Meson. 
