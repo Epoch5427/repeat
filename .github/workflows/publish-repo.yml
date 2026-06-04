@@ -15,7 +15,7 @@ jobs:
       - name: Install Flatpak & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder elfutils
+          sudo apt-get install -y flatpak flatpak-builder elfutils appstream appstream-compose
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
       - name: Checkout existing repo history (to keep update deltas)
