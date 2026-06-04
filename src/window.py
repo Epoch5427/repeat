@@ -427,42 +427,6 @@ class RepeatWindow(Adw.ApplicationWindow):
         # Load Saved Settings
         self._load_settings()
 
-        self._setup_shortcuts_help_overlay()
-
-    def _setup_shortcuts_help_overlay(self):
-        shortcuts_win = Gtk.ShortcutsWindow(
-            transient_for=self,
-            modal=True,
-            title="Keyboard Shortcuts"
-        )
-
-        section = Gtk.ShortcutsSection()
-
-        group_controls = Gtk.ShortcutsGroup(title="Application Controls")
-
-        shortcut_toggle = Gtk.ShortcutsShortcut(
-            title="Default Global Toggle Autoclicker",
-            accelerator="F8"
-        )
-        group_controls.append(shortcut_toggle)
-
-        shortcut_cancel = Gtk.ShortcutsShortcut(
-            title="Cancel / Close Dialogs",
-            accelerator="Escape"
-        )
-        group_controls.append(shortcut_cancel)
-
-        quit_app = Gtk.ShortcutsShortcut(
-            title="Quit",
-            accelerator="<Ctrl>Q"
-        )
-        group_controls.append(quit_app)
-
-        section.append(group_controls)
-        shortcuts_win.add_section(section)
-
-        self.set_help_overlay(shortcuts_win)
-
     def _async_init_uinput(self):
         try:
             capabilities = {
@@ -1643,3 +1607,4 @@ class RepeatWindow(Adw.ApplicationWindow):
     def _show_toast(self, message):
         toast = Adw.Toast.new(message)
         self.toast_overlay.add_toast(toast)
+
