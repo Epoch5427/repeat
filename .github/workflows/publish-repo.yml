@@ -29,12 +29,28 @@ jobs:
         run: |
           mkdir -p gh-pages/repo
           echo "Repeat Autoclicker Flatpak Repository" > gh-pages/index.html
+          touch gh-pages/.nojekyll
           cp data/icons/hicolor/symbolic/apps/io.github.Epoch5427.repeat-symbolic.png gh-pages/repo/logo.png
+
+      - name: Import GPG Key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        if: env.GPG_PRIVATE_KEY != ''
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --import
+          # Dynamically extract the Key ID we imported
+          KEYID=$(gpg --list-keys --with-colons | awk -F: '/^pub:/ { print $5; exit }')
+          echo "SIGNING_KEY=$KEYID" >> $GITHUB_ENV
 
       - name: Build App and Export to Repo
         run: |
-          flatpak-builder --user --install-deps-from=flathub --force-clean build-dir io.github.Epoch5427.repeat.json --repo=gh-pages/repo
-          flatpak build-update-repo gh-pages/repo
+          if [ -n "$SIGNING_KEY" ]; then
+            flatpak-builder --user --install-deps-from=flathub --force-clean build-dir io.github.Epoch5427.repeat.json --repo=gh-pages/repo --gpg-sign=$SIGNING_KEY
+            flatpak build-update-repo --gpg-sign=$SIGNING_KEY gh-pages/repo
+          else
+            flatpak-builder --user --install-deps-from=flathub --force-clean build-dir io.github.Epoch5427.repeat.json --repo=gh-pages/repo
+            flatpak build-update-repo gh-pages/repo
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
