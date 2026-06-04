@@ -1,4 +1,4 @@
-application_id = 'com.epoch.repeat'
+application_id = 'io.github.Epoch5427.repeat'
 
 scalable_dir = 'hicolor' / 'scalable' / 'apps'
 install_data(

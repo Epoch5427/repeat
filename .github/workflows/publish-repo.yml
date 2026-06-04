@@ -1,0 +1,42 @@
+name: Build and Publish Flatpak Repo
+
+on:
+  push:
+    tags:
+      - 'v*' # This triggers the build when you push a tag like 'v1.0'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Flatpak & Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder elfutils
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+      - name: Checkout existing repo history (to keep update deltas)
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true # It's okay if the gh-pages branch doesn't exist yet!
+
+      - name: Prepare Repo Directory
+        run: |
+          mkdir -p gh-pages/repo
+          echo "Repeat Autoclicker Flatpak Repository" > gh-pages/index.html
+
+      - name: Build App and Export to Repo
+        run: |
+          flatpak-builder --user --install-deps-from=flathub --force-clean build-dir io.github.Epoch5427.repeat.json --repo=gh-pages/repo
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          publish_branch: gh-pages

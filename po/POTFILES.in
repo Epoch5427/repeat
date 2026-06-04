@@ -1,8 +1,8 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-data/com.epoch.repeat.desktop.in
-data/com.epoch.repeat.metainfo.xml.in
-data/com.epoch.repeat.gschema.xml
+data/io.github.Epoch5427.repeat.desktop.in
+data/io.github.Epoch5427.repeat.metainfo.xml.in
+data/io.github.Epoch5427.repeat.gschema.xml
 src/main.py
 src/window.py
 src/window.ui

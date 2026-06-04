@@ -2,6 +2,8 @@ import uuid
 import threading
 import random
 import time
+import json
+import os
 from gi.repository import Adw
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -93,7 +95,7 @@ class MacroRecorderDialog(Gtk.Window):
         if existing_macro:
             self.recorded_actions = [x.strip() for x in existing_macro.split(",") if x.strip()]
 
-        # Setup custom rounded CSS theme rules for the scrolled window frame
+        # Make the input window's parent rounded + add margins
         css = b"""
         .rounded-scrolled-window {
             border-radius: 12px;
@@ -111,7 +113,7 @@ class MacroRecorderDialog(Gtk.Window):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        # Setup flat header bar (removes the default bottom border line)
+        # Make header bar flat
         header_bar = Adw.HeaderBar()
         header_bar.add_css_class("flat")
         header_bar.set_show_end_title_buttons(False)
@@ -128,7 +130,7 @@ class MacroRecorderDialog(Gtk.Window):
         self.save_btn.set_sensitive(False)
         header_bar.pack_end(self.save_btn)
 
-        # Content Layout
+        # Popup layout
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         main_box.set_margin_top(12)
         main_box.set_margin_bottom(16)
@@ -151,7 +153,7 @@ class MacroRecorderDialog(Gtk.Window):
         self.sequence_text_view.set_cursor_visible(False)
         self.sequence_text_view.set_wrap_mode(Gtk.WrapMode.WORD)
 
-        # Generous padding inside the text box
+        # Padding inside the text box
         self.sequence_text_view.set_left_margin(14)
         self.sequence_text_view.set_right_margin(14)
         self.sequence_text_view.set_top_margin(14)
@@ -160,10 +162,9 @@ class MacroRecorderDialog(Gtk.Window):
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.set_child(self.sequence_text_view)
         scrolled_window.set_vexpand(True)
-        scrolled_window.set_has_frame(False) # Turn off default border so our rounded-corner CSS works cleanly
+        scrolled_window.set_has_frame(False)
         scrolled_window.add_css_class("rounded-scrolled-window")
 
-        # Inset text area away from dialog boundaries
         scrolled_window.set_margin_start(24)
         scrolled_window.set_margin_end(24)
         scrolled_window.set_margin_top(4)
@@ -171,7 +172,7 @@ class MacroRecorderDialog(Gtk.Window):
 
         main_box.append(scrolled_window)
 
-        # Unified control button
+        # Primary button
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         btn_box.set_halign(Gtk.Align.CENTER)
         btn_box.set_margin_bottom(12)
@@ -183,7 +184,7 @@ class MacroRecorderDialog(Gtk.Window):
         main_box.append(btn_box)
         self.set_child(main_box)
 
-        # Sync visual state for existing sequence
+        # Sync existing sequence
         self._update_text_display()
         self._update_button_state()
         if self.recorded_actions:
@@ -218,7 +219,7 @@ class MacroRecorderDialog(Gtk.Window):
             self.save_btn.set_sensitive(len(self.recorded_actions) > 0)
         else:
             if self.recorded_actions:
-                # Transition from Stopped -> Clear -> Idle
+                # Transition from Stopped to Clear to Idle
                 self.recorded_actions.clear()
                 self.last_event_time = None
                 self._update_text_display()
@@ -227,7 +228,7 @@ class MacroRecorderDialog(Gtk.Window):
             else:
                 # Transition to Recording
                 self.is_recording = True
-                self.last_event_time = None  # Resets delay computation for the very first key
+                self.last_event_time = None  # Reset delay computation for the very first key as this was extremely annoying
                 self._show_recording_status()
                 self._update_button_state()
                 self.save_btn.set_sensitive(False)
@@ -296,13 +297,11 @@ class MacroRecorderDialog(Gtk.Window):
         self.destroy()
 
 
-@Gtk.Template(resource_path='/com/epoch/repeat/window.ui')
+@Gtk.Template(resource_path='/io/github/Epoch5427/repeat/window.ui')
 class RepeatWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'RepeatWindow'
 
-    # -----------------------------------------
-    # Template Children Mapping
-    # -----------------------------------------
+    # Binding
     primary_menu_popover = Gtk.Template.Child()
     toast_overlay = Gtk.Template.Child()
     toggle_run_btn = Gtk.Template.Child()
@@ -389,19 +388,18 @@ class RepeatWindow(Adw.ApplicationWindow):
         self._session_sub_id = None
         self._bind_sub_id = None
 
-        # Retry connection variables for the global shortcut portal
+        # Retry connection variables for the global shortcut portal as I can't for the life of me get it to connect on the first try'
         self._portal_attempts = 0
         self._portal_retry_timer_id = None
 
-        # Click cooldown logic variables
+        # Click cooldown logic variables so user can stop the autoclicker by hovering his mouse over it even while it is running
         self._block_toggle_signal = False
         self._toggle_cooldown_active = False
 
-        # Connect Visibility / Sensitivity Rules via PyGObject
         self.timing_mode.connect("notify::selected", self._on_timing_mode_changed)
         self._on_timing_mode_changed()
 
-        self._target_key_name = "space"
+        self._target_key_name = "a"
         self.kb_shortcut_label.set_accelerator(self._target_key_name)
         self.kb_key_button.connect("clicked", self._show_key_picker_dialog)
 
@@ -416,7 +414,7 @@ class RepeatWindow(Adw.ApplicationWindow):
         self._key_controller.connect("key-pressed", self._on_key_pressed)
         self.add_controller(self._key_controller)
 
-        # Global Hotkey Request with automated retries
+        # Global Hotkey Request
         GLib.idle_add(self._trigger_portal_setup, True)
 
         # Signals
@@ -425,6 +423,9 @@ class RepeatWindow(Adw.ApplicationWindow):
         self.shortcut_collision_banner.connect("button-clicked", self._on_shortcut_collision_retry)
         self.record_macro_btn.connect("activated", self._on_record_macro_activated)
         self.toggle_run_btn.connect("toggled", self._on_toggle_run_toggled)
+
+        # Load Saved Settings
+        self._load_settings()
 
         self._setup_shortcuts_help_overlay()
 
@@ -503,9 +504,129 @@ class RepeatWindow(Adw.ApplicationWindow):
         self.rate_count.set_visible(not is_delay)
         self.rate_unit.set_visible(not is_delay)
 
-    # ==========================================
-    # Coordinate Picker (Screenshot Overlay)
-    # ==========================================
+    # State Saving and Loading
+
+    def _save_settings(self):
+        config_dir = GLib.get_user_config_dir()
+        app_dir = os.path.join(config_dir, "io.github.Epoch5427.repeat")
+        os.makedirs(app_dir, exist_ok=True)
+        settings_path = os.path.join(app_dir, "settings.json")
+
+        settings = {
+            'active_mode': int(round(self.carousel.get_position())),
+            'left_click': self.btn_left_click.get_active(),
+            'middle_click': self.btn_middle_click.get_active(),
+            'right_click': self.btn_right_click.get_active(),
+            'click_type_idx': self.click_type_row.get_selected(),
+            'custom_location_enabled': self.custom_location_row.get_enable_expansion(),
+            'mouse_pos_x': int(self.mouse_pos_x.get_value()),
+            'mouse_pos_y': int(self.mouse_pos_y.get_value()),
+
+            'target_key_name': self._target_key_name,
+            'kb_action_type': self.kb_action_type_row.get_selected(),
+
+            'macro_text': self.macro_sequence_row.get_text(),
+
+            'timing_mode': self.timing_mode.get_selected(),
+            'interval_ms': int(self.interval_ms.get_value()),
+            'rate_count': int(self.rate_count.get_value()),
+            'rate_unit': self.rate_unit.get_selected(),
+            'start_delay': int(self.start_delay_row.get_value()),
+            'repeat_limit_enabled': self.repeat_limit.get_enable_expansion(),
+            'repeat_count': int(self.repeat_count_row.get_value()),
+            'time_limit_enabled': self.has_time_limit.get_enable_expansion(),
+            'time_limit': int(self.time_limit_row.get_value()),
+
+            'randomize_interval': self.randomize_interval.get_enable_expansion(),
+            'spread_ms': int(self.random_spread_ms.get_value()),
+            'duty_cycle': int(self.duty_cycle.get_value())
+        }
+
+        try:
+            with open(settings_path, 'w') as f:
+                json.dump(settings, f)
+        except Exception as e:
+            print(f"Failed to save settings: {e}", flush=True)
+
+    def _load_settings(self):
+        config_dir = GLib.get_user_config_dir()
+        settings_path = os.path.join(config_dir, "io.github.Epoch5427.repeat", "settings.json")
+
+        if not os.path.exists(settings_path):
+            return
+
+        try:
+            with open(settings_path, 'r') as f:
+                settings = json.load(f)
+
+            if 'active_mode' in settings:
+                idx = settings['active_mode']
+                try:
+                    child = self.carousel.get_nth_page(idx)
+                    if child:
+                        self.carousel.scroll_to(child, False)
+                except AttributeError:
+                    pass
+
+            if settings.get('left_click'):
+                self.btn_left_click.set_active(True)
+            elif settings.get('middle_click'):
+                self.btn_middle_click.set_active(True)
+            elif settings.get('right_click'):
+                self.btn_right_click.set_active(True)
+
+            if 'click_type_idx' in settings:
+                self.click_type_row.set_selected(settings['click_type_idx'])
+            if 'custom_location_enabled' in settings:
+                self.custom_location_row.set_enable_expansion(settings['custom_location_enabled'])
+            if 'mouse_pos_x' in settings:
+                self.mouse_pos_x.set_value(settings['mouse_pos_x'])
+            if 'mouse_pos_y' in settings:
+                self.mouse_pos_y.set_value(settings['mouse_pos_y'])
+
+            if 'target_key_name' in settings:
+                self._target_key_name = settings['target_key_name']
+                self.kb_shortcut_label.set_accelerator(self._target_key_name)
+            if 'kb_action_type' in settings:
+                self.kb_action_type_row.set_selected(settings['kb_action_type'])
+
+            if 'macro_text' in settings:
+                self.macro_sequence_row.set_text(settings['macro_text'])
+
+            if 'timing_mode' in settings:
+                self.timing_mode.set_selected(settings['timing_mode'])
+                self._on_timing_mode_changed()
+
+            if 'interval_ms' in settings:
+                self.interval_ms.set_value(settings['interval_ms'])
+            if 'rate_count' in settings:
+                self.rate_count.set_value(settings['rate_count'])
+            if 'rate_unit' in settings:
+                self.rate_unit.set_selected(settings['rate_unit'])
+            if 'start_delay' in settings:
+                self.start_delay_row.set_value(settings['start_delay'])
+
+            if 'repeat_limit_enabled' in settings:
+                self.repeat_limit.set_enable_expansion(settings['repeat_limit_enabled'])
+            if 'repeat_count' in settings:
+                self.repeat_count_row.set_value(settings['repeat_count'])
+
+            if 'time_limit_enabled' in settings:
+                self.has_time_limit.set_enable_expansion(settings['time_limit_enabled'])
+            if 'time_limit' in settings:
+                self.time_limit_row.set_value(settings['time_limit'])
+
+            if 'randomize_interval' in settings:
+                self.randomize_interval.set_enable_expansion(settings['randomize_interval'])
+            if 'spread_ms' in settings:
+                self.random_spread_ms.set_value(settings['spread_ms'])
+            if 'duty_cycle' in settings:
+                self.duty_cycle.set_value(settings['duty_cycle'])
+
+        except Exception as e:
+            print(f"Failed to load settings: {e}", flush=True)
+
+    # Coordinate Picker (Screenshot Overlay) in order to appease wayland + flatpak
 
     def _on_pick_position_activated(self, row):
         self.set_visible(False)
@@ -518,7 +639,7 @@ class RepeatWindow(Adw.ApplicationWindow):
             "org.freedesktop.portal.Desktop",
             "org.freedesktop.portal.Request",
             "Response",
-            None,  # Wildcard path (matches any path)
+            None,
             None,
             Gio.DBusSignalFlags.NO_MATCH_RULE,
             self._on_screenshot_response,
@@ -527,8 +648,8 @@ class RepeatWindow(Adw.ApplicationWindow):
 
         options = {
             "handle_token": GLib.Variant("s", self._screenshot_req_token),
-            "interactive": GLib.Variant("b", False),  # Bypass native selector
-            "target": GLib.Variant("u", 1)           # Force immediate full-screen
+            "interactive": GLib.Variant("b", False),  # Skip user interaction
+            "target": GLib.Variant("u", 1)           # Make screenshot fullscreen
         }
 
         self._dbus_conn.call(
@@ -695,9 +816,7 @@ class RepeatWindow(Adw.ApplicationWindow):
 
         picker_win.present()
 
-    # ==========================================
     # D-Bus Portal Implementation
-    # ==========================================
 
     def _trigger_portal_setup(self, reset_attempts=True):
         if reset_attempts:
@@ -723,7 +842,7 @@ class RepeatWindow(Adw.ApplicationWindow):
             GLib.idle_add(self.shortcut_collision_banner.set_revealed, True)
 
     def _setup_portal_shortcuts(self):
-        GLib.set_prgname("com.epoch.repeat")
+        GLib.set_prgname("io.github.Epoch5427.repeat")
         try:
             if not self._dbus_conn:
                 self._dbus_conn = Gio.bus_get_sync(Gio.BusType.SESSION, None)
@@ -731,7 +850,7 @@ class RepeatWindow(Adw.ApplicationWindow):
                 self._close_portal_session()
                 self._session_handle = None
 
-            # Unsubscribe existing subscriptions to avoid duplicate event handling
+            # Unsubscribe existing subscriptions to avoid duplicate event handling (probably doesn't work given the success rate on the xdg portal connections)
             if hasattr(self, '_session_sub_id') and self._session_sub_id:
                 try:
                     self._dbus_conn.signal_unsubscribe(self._session_sub_id)
@@ -884,8 +1003,7 @@ class RepeatWindow(Adw.ApplicationWindow):
             self._handle_portal_failure()
             return
 
-        #print("[Portal] Shortcuts successfully registered and active!", flush=True)
-        # Reset attempt counter on absolute success
+        #print("[Portal] Shortcuts successfully registered and active!", flush=True) # for debugging
         self._portal_attempts = 0
 
     def _on_portal_shortcut_activated(self, connection, sender, path, interface, signal, parameters, user_data):
@@ -914,9 +1032,7 @@ class RepeatWindow(Adw.ApplicationWindow):
         self.shortcut_collision_banner.set_revealed(False)
         self._trigger_portal_setup(True)
 
-    # ==========================================
     # Execution Logic
-    # ==========================================
 
     def _on_banner_button_clicked(self, banner):
         message = (
@@ -954,8 +1070,7 @@ class RepeatWindow(Adw.ApplicationWindow):
             button.add_css_class("suggested-action")
             self._stop_execution()
 
-            # Activate a 500ms cooldown where new ON toggles are ignored
-            # without modifying visual sensitivity (prevents button flashing)
+            # Activate a 50ms cooldown where new ON toggles are ignored. this is done programmatically rather than using sensitivity because I didn't like the way the button flashed that way'
             self._toggle_cooldown_active = True
             def end_cooldown():
                 self._toggle_cooldown_active = False
@@ -968,7 +1083,7 @@ class RepeatWindow(Adw.ApplicationWindow):
             self._show_toast("Virtual pointer is not connected.")
             return
 
-        # Perform syntax validation if macro mode is active
+        # Perform syntax validation only if macro mode is active
         active_mode = int(round(self.carousel.get_position()))
         if active_mode == 2:
             macro_text = self.macro_sequence_row.get_text()
@@ -1130,7 +1245,6 @@ class RepeatWindow(Adw.ApplicationWindow):
             else:
                 base_interval = int(86400000 / count)
 
-        # Handle the GTK4 Gtk.accelerator_parse 3-tuple return thread-safely
         target_key = self._target_key_name
         all_codes = []
         if target_key:
@@ -1202,7 +1316,7 @@ class RepeatWindow(Adw.ApplicationWindow):
         self._worker_config = self._snapshot_config()
         self._stop_event = threading.Event()
 
-        # Launch the high precision worker thread
+        # Launch the worker thread
         self._worker_thread = threading.Thread(target=self._execution_worker, daemon=True)
         self._worker_thread.start()
 
@@ -1221,7 +1335,6 @@ class RepeatWindow(Adw.ApplicationWindow):
         while not self._stop_event.is_set():
             interval_secs = self._get_worker_interval_secs(config)
 
-            # Fire virtual actions without locking GUI
             self._perform_worker_action(config)
 
             self._executions_made += 1
@@ -1236,17 +1349,15 @@ class RepeatWindow(Adw.ApplicationWindow):
                 GLib.idle_add(self._stop_from_worker, f"Reached time limit of {config['time_limit']}s.")
                 break
 
-            # High precision tracking math with automatic drift elimination
             next_time += interval_secs
             sleep_time = next_time - time.perf_counter()
 
             if sleep_time > 0:
-                # Use precision OS wait for longer gaps to reduce CPU usage
+                # Use OS wait for longer gaps to reduce CPU usage
                 if sleep_time > 0.001:
                     if self._stop_event.wait(timeout=sleep_time - 0.0005):
                         return
 
-                # Spin-yield loop for sub-millisecond precision without completely maxing out a core
                 while True:
                     if time.perf_counter() >= next_time:
                         break
@@ -1501,6 +1612,7 @@ class RepeatWindow(Adw.ApplicationWindow):
     def _on_close_request(self, window):
         self._stop_execution()
         self._close_portal_session()
+        self._save_settings()
         return False
 
     def _close_portal_session(self):

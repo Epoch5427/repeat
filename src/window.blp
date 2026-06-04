@@ -31,7 +31,6 @@ template $RepeatWindow: Adw.ApplicationWindow {
           button-label: "Help";
         }
 
-        // New Banner for Shortcut Conflicts (Response Code 2)
         Adw.Banner shortcut_collision_banner {
           title: "The Global Shortcut (F8) conflicts with another application or was rejected.";
           button-label: "Retry";
@@ -148,7 +147,7 @@ template $RepeatWindow: Adw.ApplicationWindow {
                 }
               }
 
-              // Page 2: Keyboard Action (UPGRADED)
+              // Page 2: Keyboard Action
               Adw.Clamp {
                 orientation: horizontal;
                 valign: center;
@@ -179,7 +178,6 @@ template $RepeatWindow: Adw.ApplicationWindow {
                       }
                     }
 
-                    // Added Option 1: Key Action Type
                     Adw.ComboRow kb_action_type_row {
                       title: "Key Action";
                       model: Gtk.StringList { strings [ "Press and Release", "Hold Key down", "Release Key" ] };

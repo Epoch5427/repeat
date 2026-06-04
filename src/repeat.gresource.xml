@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/com/epoch/repeat">
+  <gresource prefix="/io/github/Epoch5427/repeat">
     <file preprocess="xml-stripblanks">window.ui</file>
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
   </gresource>
-    <gresource prefix="/com/epoch/repeat/icons/scalable/actions">
+    <gresource prefix="/io/github/Epoch5427/repeat/icons/scalable/actions">
     <file alias="mouse-primary-click-symbolic.svg">../data/icons/scalable/actions/mouse-primary-click-symbolic.svg</file>
   </gresource>
-  <gresource prefix="/com/epoch/repeat/icons/scalable/actions">
+  <gresource prefix="/io/github/Epoch5427/repeat/icons/scalable/actions">
     <file alias="mouse-secondary-click-symbolic.svg">../data/icons/scalable/actions/mouse-secondary-click-symbolic.svg</file>
   </gresource>
-  <gresource prefix="/com/epoch/repeat/icons/scalable/actions">
+  <gresource prefix="/io/github/Epoch5427/repeat/icons/scalable/actions">
     <file alias="mouse-middle-click-symbolic.svg">../data/icons/scalable/actions/mouse-middle-click-symbolic.svg</file>
-  </gresource>
-  <gresource prefix="/com/epoch/repeat/icons/scalable/actions">
-    <file alias="uppercase-symbolic.svg">../data/icons/scalable/actions/uppercase-symbolic.svg</file>
   </gresource>
 </gresources>

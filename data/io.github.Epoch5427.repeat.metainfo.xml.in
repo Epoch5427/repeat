@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.Epoch5427.repeat</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Repeat</name>
+  <summary>Wayland-First Autoclicker</summary>
+  <description>
+    <p>Repeat is a high-performance autoclicker tool designed natively for Wayland desktops with support for global shortcuts. It permits the configuration of automated mouse clicks, keyboard shortcuts, and macro sequences. </p>
+    <p>Features:</p>
+    <ul>
+      <li>Natively supports Wayland global shortcuts using Desktop Portals.</li>
+      <li>Highly precise background execution loop via kernel-level uinput emulation.</li>
+      <li>Integrated macro sequencer with an interactive, live timing recorder.</li>
+      <li>Robust coordination picker with full-screen coordinate capture.</li>
+    </ul>
+  </description>
+
+  <developer id="io.github.Epoch5427.repeat">
+    <name>Epoch</name>
+  </developer>
+
+  <!-- Required: Should be a link to the upstream homepage for the component -->
+  <url type="homepage">https://github.com/Epoch5427/repeat</url>
+  <!-- Recommended: It is highly recommended for open-source projects to display the source code repository -->
+  <url type="vcs-browser">https://github.com/Epoch5427/repeat</url>
+  <!-- Should point to the software's bug tracking system, for users to report new bugs -->
+  <url type="bugtracker">https://github.com/Epoch5427/repeat/issues</url>
+
+  <translation type="gettext">repeat</translation>
+  <!-- All graphical applications having a desktop file must have this tag in the MetaInfo.
+     If this is present, appstreamcli compose will pull icons, keywords and categories from the desktop file. -->
+  <launchable type="desktop-id">io.github.Epoch5427.repeat.desktop</launchable>
+  <!-- Use the OARS website (https://hughsie.github.io/oars/generate.html) to generate these and make sure to use oars-1.1 -->
+  <content_rating type="oars-1.1" />
+
+  <!-- Applications should set a brand color in both light and dark variants like so -->
+  <branding>
+    <color type="primary" scheme_preference="light">#ffa2a8</color>
+    <color type="primary" scheme_preference="dark">#8b1119</color>
+  </branding>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/user-attachments/assets/3145d7c6-7884-43cb-a8e5-11f7c13f887f</image>
+      <caption>The main mouse settings and timing configuration panel.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://github.com/user-attachments/assets/98f0fae3-6ff7-4904-8ecd-8b066c96606e</image>
+      <caption>The main keyboard settings and timing configuration panel.</caption>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.0.0" date="2026-06-03">
+      <url type="details">https://example.org/changelog.html#version_1.0.0</url>
+      <description translate="no">
+        <p>Initial Release</p>
+      </description>
+    </release>
+  </releases>
+
+</component>

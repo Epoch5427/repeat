@@ -33,9 +33,9 @@ class RepeatApplication(Adw.Application):
     """The main application singleton class."""
 
     def __init__(self):
-        super().__init__(application_id='com.epoch.repeat',
+        super().__init__(application_id='io.github.Epoch5427.repeat',
                          flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
-                         resource_base_path='/com/epoch/repeat')
+                         resource_base_path='/io/github/Epoch5427/repeat')
         self.create_action('quit', lambda *_: self.quit(), ['<control>q'])
         self.create_action('about', self.on_about_action)
         self.create_action('preferences', self.on_preferences_action)
@@ -54,7 +54,7 @@ class RepeatApplication(Adw.Application):
     def on_about_action(self, *args):
         """Callback for the app.about action."""
         about = Adw.AboutDialog(application_name='Repeat',
-                                application_icon='com.epoch.repeat',
+                                application_icon='io.github.Epoch5427.repeat',
                                 developer_name='Epoch',
                                 version='1.0',
                                 # Translators: Replace "translator-credits" with your name/username, and optionally an email or URL.

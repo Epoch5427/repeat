@@ -1,10 +1,10 @@
 [Desktop Entry]
 Name=Repeat
 Exec=repeat
-Icon=com.epoch.repeat
+Icon=io.github.Epoch5427.repeat
 Terminal=false
 Type=Application
 Categories=Utility;
-Keywords=GTK;
+Keywords=GTK;Auto Clicker;Autoclicker;Auto-Clicker;
 StartupNotify=true
 DBusActivatable=true

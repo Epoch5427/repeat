@@ -1,11 +1,10 @@
 {
-    "id" : "com.epoch.repeat",
+    "id" : "io.github.Epoch5427.repeat",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "50",
     "sdk" : "org.gnome.Sdk",
     "command" : "repeat",
     "finish-args" : [
-        "--share=network",
         "--share=ipc",
         "--socket=fallback-x11",
         "--device=all",
@@ -35,8 +34,7 @@
                 {
                     "type" : "git",
                     "url" : "https://gitlab.gnome.org/GNOME/blueprint-compiler.git",
-                    "branch" : "main",
-                    "depth" : 1
+                    "branch" : "main"
                 }
             ]
         },
