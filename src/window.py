@@ -391,6 +391,7 @@ class RepeatWindow(Adw.ApplicationWindow):
         # Retry connection variables for the global shortcut portal as I can't for the life of me get it to connect on the first try'
         self._portal_attempts = 0
         self._portal_retry_timer_id = None
+        self._has_saved_shortcut = False
 
         # Click cooldown logic variables so user can stop the autoclicker by hovering his mouse over it even while it is running
         self._block_toggle_signal = False
@@ -477,6 +478,7 @@ class RepeatWindow(Adw.ApplicationWindow):
         settings_path = os.path.join(app_dir, "settings.json")
 
         settings = {
+            'has_saved_shortcut': getattr(self, '_has_saved_shortcut', False),
             'active_mode': int(round(self.carousel.get_position())),
             'left_click': self.btn_left_click.get_active(),
             'middle_click': self.btn_middle_click.get_active(),
@@ -522,6 +524,9 @@ class RepeatWindow(Adw.ApplicationWindow):
         try:
             with open(settings_path, 'r') as f:
                 settings = json.load(f)
+
+            if 'has_saved_shortcut' in settings:
+                self._has_saved_shortcut = settings['has_saved_shortcut']
 
             if 'active_mode' in settings:
                 idx = settings['active_mode']
@@ -797,6 +802,12 @@ class RepeatWindow(Adw.ApplicationWindow):
         return GLib.SOURCE_REMOVE
 
     def _handle_portal_failure(self):
+        # When no shortcut has previously been established, the user sees a permission prompt.
+        if not getattr(self, '_has_saved_shortcut', False):
+            print("[Portal] Connection failed and no shortcut was previously established. Skipping retries.", flush=True)
+            GLib.idle_add(self.shortcut_collision_banner.set_revealed, True)
+            return
+
         self._portal_attempts += 1
         if self._portal_attempts < 5:
             print(f"[Portal] Connection attempt {self._portal_attempts} failed. Retrying in 1 second...", flush=True)
@@ -969,6 +980,7 @@ class RepeatWindow(Adw.ApplicationWindow):
 
         #print("[Portal] Shortcuts successfully registered and active!", flush=True) # for debugging
         self._portal_attempts = 0
+        self._has_saved_shortcut = True
 
     def _on_portal_shortcut_activated(self, connection, sender, path, interface, signal, parameters, user_data):
         unpacked = parameters.unpack()
@@ -1607,4 +1619,3 @@ class RepeatWindow(Adw.ApplicationWindow):
     def _show_toast(self, message):
         toast = Adw.Toast.new(message)
         self.toast_overlay.add_toast(toast)
-
