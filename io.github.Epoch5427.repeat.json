@@ -51,4 +51,8 @@
             ]
         }
     ]
+    "build-commands": [
+    "install -Dm644 data/io.github.Epoch5427.repeat.metainfo.xml.in /app/share/metainfo/io.github.Epoch5427.repeat.metainfo.xml",
+    "install -Dm644 data/io.github.Epoch5427.repeat.desktop.in /app/share/applications/io.github.Epoch5427.repeat.desktop"
+]
 }
