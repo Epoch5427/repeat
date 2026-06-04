@@ -28,7 +28,7 @@
   <!-- Should point to the software's bug tracking system, for users to report new bugs -->
   <url type="bugtracker">https://github.com/Epoch5427/repeat/issues</url>
 
-  <translation type="gettext">repeat</translation>
+  <!-- <translation type="gettext">repeat</translation> -->
   <!-- All graphical applications having a desktop file must have this tag in the MetaInfo.
      If this is present, appstreamcli compose will pull icons, keywords and categories from the desktop file. -->
   <launchable type="desktop-id">io.github.Epoch5427.repeat.desktop</launchable>
