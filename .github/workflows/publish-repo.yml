@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir -p gh-pages/repo
           echo "Repeat Autoclicker Flatpak Repository" > gh-pages/index.html
-          cp data/icons/hicolor/symbolic/apps/io.github.Epoch5427.repeat.svg gh-pages/repo/logo.svg
+          cp data/icons/hicolor/symbolic/apps/io.github.Epoch5427.repeat-symbolic.svg gh-pages/repo/logo.svg
 
       - name: Build App and Export to Repo
         run: |
