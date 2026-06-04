@@ -34,7 +34,7 @@ jobs:
       - name: Build App and Export to Repo
         run: |
           flatpak-builder --user --install-deps-from=flathub --force-clean build-dir io.github.Epoch5427.repeat.json --repo=gh-pages/repo
-          flatpak build-update-repo --update-appstream gh-pages/repo
+          flatpak build-update-repo gh-pages/repo
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
