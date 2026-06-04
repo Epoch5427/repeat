@@ -27,7 +27,13 @@ jobs:
 
       - name: Prepare Repo Directory
         run: |
-          mkdir -p gh-pages/repo
+          mkdir -p gh-pages
+
+          # If the OSTree database doesn't exist, initialize it cleanly
+          if [ ! -d "gh-pages/repo/objects" ]; then
+            ostree init --mode=archive-z2 --repo=gh-pages/repo
+          fi
+
           echo "Repeat Autoclicker Flatpak Repository" > gh-pages/index.html
           touch gh-pages/.nojekyll
           cp data/icons/hicolor/symbolic/apps/io.github.Epoch5427.repeat-symbolic.png gh-pages/repo/logo.png
