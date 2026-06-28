@@ -53,8 +53,14 @@
   </screenshots>
 
   <releases>
+    <release version="1.0.1" date="2026-06-29">
+      <url type="details">https://github.com/Epoch5427/repeat/releases/tag/v1.0.1</url>
+      <description translate="no">
+        <p>The main application window is able to dynamically get a lot smaller now</p>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-06-03">
-      <url type="details">https://example.org/changelog.html#version_1.0.0</url>
+      <url type="details">https://github.com/Epoch5427/repeat/releases/tag/v1.0.0</url>
       <description translate="no">
         <p>Initial Release</p>
       </description>

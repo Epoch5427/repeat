@@ -1,10 +1,42 @@
 using Gtk 4.0;
 using Adw 1;
 
+// Size group placed at the top level to avoid GTK widget-child warnings
+Gtk.SizeGroup column_size_group {
+  mode: horizontal;
+  widgets [ left_column, right_column ]
+}
+
 template $RepeatWindow: Adw.ApplicationWindow {
   title: "Repeat";
   default-width: 970;
-  default-height: 480;
+  default-height: 750;
+
+  // Breakpoint 1: Narrow width -> Reduce column size and margins to fit small widths
+  Adw.Breakpoint {
+    condition ("max-width: 760sp and min-height: 400sp")
+    setters {
+      right_column.visible: false;
+      separator.visible: false;
+      main_content_area.margin-start: 12;
+      main_content_area.margin-end: 12;
+      left_column.width-request: 280;
+      left_column.halign: center; // Centers the column inside its expanded 100% space
+    }
+  }
+
+  // Breakpoint 2: Short height -> Hide the scrollable settings area, leaving only the start button
+  Adw.Breakpoint {
+    condition ("max-height: 400sp")
+    setters {
+      main_content_area.visible: false;
+      start_box.valign: center;
+      toggle_run_btn.valign: center;
+
+      scrolled_window.visible: false;
+    }
+  }
+
   content: Adw.ToastOverlay toast_overlay {
     child: Adw.ToolbarView {
 
@@ -37,298 +69,347 @@ template $RepeatWindow: Adw.ApplicationWindow {
           revealed: false;
         }
 
-        Gtk.CenterBox {
-          margin-top: 32;
-          margin-bottom: 32;
-          margin-start: 32;
-          margin-end: 32;
-          hexpand: true;
+        Gtk.ScrolledWindow scrolled_window {
           vexpand: true;
+          hexpand: true;
+          hscrollbar-policy: never;
+          vscrollbar-policy: automatic;
+          propagate-natural-width: true;
+          propagate-natural-height: true;
 
-          [start]
-          Box {
-            orientation: vertical;
+          child: Gtk.Box main_content_area {
+            orientation: horizontal;
+            halign: fill;
             valign: fill;
-            vexpand: true;
+            margin-top: 32;
+            margin-bottom: 32;
+            margin-start: 32;
+            margin-end: 32;
             hexpand: true;
-            spacing: 16;
-            width-request: 320;
-            Label {
-              label: _("Mode");
-              margin-top: 10;
-              margin-bottom: 10;
-              tooltip-text: _("Swipe or scroll to switch between emulating clicks, key presses and key sequences");
-              styles ["title-2"]
-            }
+            vexpand: true;
 
-            Adw.Carousel carousel {
+            Box left_column {
+              orientation: vertical;
+              valign: fill;
+              halign: fill;
               vexpand: true;
               hexpand: true;
-              orientation: horizontal;
-              allow-scroll-wheel: true;
-              allow-long-swipes: true;
-              spacing: 70;
-
-              // Page 1: Mouse Action
-              Adw.Clamp {
-                orientation: horizontal;
-                valign: center;
-                margin-end: 10;
+              spacing: 16;
+              width-request: 320;
+              Label {
+                label: _("Mode");
                 margin-top: 10;
                 margin-bottom: 10;
-                margin-start: 10;
+                tooltip-text: _("Swipe or scroll to switch between emulating clicks, key presses and key sequences");
+                styles ["title-2"]
+              }
+
+              Adw.Carousel carousel {
+                vexpand: true;
                 hexpand: true;
-                Box {
-                  orientation: vertical;
-                  spacing: 12;
+                orientation: horizontal;
+                allow-scroll-wheel: true;
+                allow-long-swipes: true;
+                spacing: 70;
 
-                  Adw.PreferencesGroup {
-                    title: "Mouse Emulation";
-                    Adw.ActionRow {
-                      title: "Mouse Button";
-                      [suffix]
-                      Gtk.Box {
-                        valign: center;
-                        styles ["linked"]
+                // Page 1: Mouse Action
+                Adw.Clamp {
+                  orientation: horizontal;
+                  valign: center;
+                  margin-end: 10;
+                  margin-top: 10;
+                  margin-bottom: 10;
+                  margin-start: 10;
+                  hexpand: true;
+                  Box {
+                    orientation: vertical;
+                    spacing: 12;
 
-                        ToggleButton btn_left_click {
-                          active: true;
-                          icon-name: "mouse-primary-click-symbolic";
+                    Adw.PreferencesGroup {
+                      title: "Mouse Emulation";
+                      Adw.ActionRow {
+                        title: "Mouse Button";
+                        [suffix]
+                        Gtk.Box {
+                          valign: center;
+                          styles ["linked"]
+
+                          ToggleButton btn_left_click {
+                            active: true;
+                            icon-name: "mouse-primary-click-symbolic";
+                          }
+                          ToggleButton btn_middle_click {
+                            group: btn_left_click;
+                            icon-name: "mouse-middle-click-symbolic";
+                          }
+                          ToggleButton btn_right_click {
+                            group: btn_left_click;
+                            icon-name: "mouse-secondary-click-symbolic";
+                          }
                         }
-                        ToggleButton btn_middle_click {
-                          group: btn_left_click;
-                          icon-name: "mouse-middle-click-symbolic";
-                        }
-                        ToggleButton btn_right_click {
-                          group: btn_left_click;
-                          icon-name: "mouse-secondary-click-symbolic";
-                        }
+                      }
+
+                      Adw.ComboRow click_type_row {
+                        title: "Click Type";
+                        model: Gtk.StringList { strings [ "Single", "Double" ] };
                       }
                     }
 
-                    Adw.ComboRow click_type_row {
-                      title: "Click Type";
-                      model: Gtk.StringList { strings [ "Single", "Double" ] };
+                    Adw.PreferencesGroup {
+                      title: "Target Position";
+                      Adw.ExpanderRow custom_location_row {
+                        title: "Custom Target Position";
+                        show-enable-switch: true;
+                        enable-expansion: false;
+
+                        Adw.SpinRow mouse_pos_x {
+                          title: "X Coordinate";
+                          adjustment: Gtk.Adjustment { lower: 0; upper: 10000; step-increment: 10; value: 500; };
+                          focusable: false;
+                          focus-on-click: false;
+                        }
+
+                        Adw.SpinRow mouse_pos_y {
+                          title: "Y Coordinate";
+                          adjustment: Gtk.Adjustment { lower: 0; upper: 10000; step-increment: 10; value: 500; };
+                          focusable: false;
+                          focus-on-click: false;
+                        }
+
+                        Adw.ActionRow pick_position_row {
+                          title: "Pick Location Coordinate";
+                          activatable: true;
+
+                          [suffix]
+                          Gtk.Image {
+                            icon-name: "find-location-symbolic";
+                          }
+                        }
+                      }
                     }
                   }
+                }
 
-                  Adw.PreferencesGroup {
-                    title: "Target Position";
-                    Adw.ExpanderRow custom_location_row {
-                      title: "Custom Target Position";
-                      show-enable-switch: true;
-                      enable-expansion: false;
-
-                      Adw.SpinRow mouse_pos_x {
-                        title: "X Coordinate";
-                        adjustment: Gtk.Adjustment { lower: 0; upper: 10000; step-increment: 10; value: 500; };
-                        focusable: false;
-                        focus-on-click: false;
-                      }
-
-                      Adw.SpinRow mouse_pos_y {
-                        title: "Y Coordinate";
-                        adjustment: Gtk.Adjustment { lower: 0; upper: 10000; step-increment: 10; value: 500; };
-                        focusable: false;
-                        focus-on-click: false;
-                      }
-
-                      Adw.ActionRow pick_position_row {
-                        title: "Pick Location Coordinate";
-                        activatable: true;
+                // Page 2: Keyboard Action
+                Adw.Clamp {
+                  orientation: horizontal;
+                  valign: center;
+                  margin-end: 10;
+                  margin-top: 10;
+                  margin-bottom: 10;
+                  margin-start: 10;
+                  hexpand: true;
+                  Box {
+                    orientation: vertical;
+                    spacing: 12;
+                    Adw.PreferencesGroup {
+                      title: "Keyboard Input";
+                      Adw.ActionRow kb_key_row {
+                        title: "Target Key";
+                        activatable-widget: kb_key_button;
 
                         [suffix]
-                        Gtk.Image {
-                          icon-name: "find-location-symbolic";
+                        Gtk.Button kb_key_button {
+                          valign: center;
+                          tooltip-text: "Click to set a new key shortcut";
+                          styles ["flat"]
+
+                          child: Gtk.ShortcutLabel kb_shortcut_label {
+                            accelerator: "space";
+                            disabled-text: "Unassigned";
+                          };
+                        }
+                      }
+
+                      Adw.ComboRow kb_action_type_row {
+                        title: "Key Action";
+                        model: Gtk.StringList { strings [ "Press and Release", "Hold Key down", "Release Key" ] };
+                      }
+                    }
+                  }
+                }
+
+                // Page 3: Macro Sequence
+                Adw.Clamp {
+                  orientation: horizontal;
+                  valign: center;
+                  margin-end: 10;
+                  margin-top: 10;
+                  margin-bottom: 10;
+                  margin-start: 10;
+                  hexpand: true;
+                  Box {
+                    Adw.PreferencesGroup {
+                      title: "Macro Sequencer";
+                      Adw.EntryRow macro_sequence_row {
+                        title: "Sequence";
+                        text: "ctrl+c, delay:50, v";
+                        tooltip-text: _("Available Syntax is: raw key events (a, space, enter), standard keyboard combinations joined by + (ctrl+alt+delete, shift+a), mouse clicks (click:left), coordinates (click:left:100:200), text typing (type:hello), and delay (delay:100)");
+                      }
+                      Adw.ActionRow record_macro_btn {
+                        title: "Record New Macro";
+                        activatable: true;
+                        icon-name: "media-record-symbolic";
+                        styles ["suggested-action"]
+                      }
+                    }
+                  }
+                }
+              }
+
+              Adw.CarouselIndicatorDots {
+                carousel: carousel;
+                orientation: horizontal;
+                halign: center;
+                valign: end;
+              }
+            }
+
+            Gtk.Separator separator {
+              orientation: vertical;
+              margin-start: 24;
+              margin-end: 24;
+            }
+
+            Gtk.Box right_column {
+              orientation: vertical;
+              valign: fill;
+              halign: fill;
+              vexpand: true;
+              hexpand: true;
+              spacing: 16;
+              width-request: 320;
+              Label {
+                label: _("Configuration");
+                margin-top: 10;
+                margin-bottom: 10;
+                tooltip-text: _("Swipe or scroll to navigate available settings");
+                styles ["title-2"]
+              }
+
+              Adw.Carousel right_carousel {
+                vexpand: true;
+                hexpand: true;
+                orientation: horizontal;
+                allow-scroll-wheel: true;
+                allow-long-swipes: true;
+                spacing: 70;
+
+                // Page 1: Timing & Speed
+                Adw.Clamp {
+                  orientation: horizontal;
+                  valign: center;
+                  margin-end: 10;
+                  margin-top: 10;
+                  margin-bottom: 10;
+                  margin-start: 10;
+                  hexpand: true;
+                  Box {
+                    orientation: vertical;
+                    spacing: 12;
+
+                    Adw.PreferencesGroup {
+                      title: "Timing &amp; Speed";
+                      Adw.ComboRow timing_mode {
+                        title: "Timing Mode";
+                        model: Gtk.StringList { strings [ "Delay (Time between)", "Rate (Clicks per time)" ] };
+                      }
+
+                      Adw.SpinRow interval_ms {
+                        title: "Interval (ms)";
+                        adjustment: Gtk.Adjustment { lower: 1; upper: 100000; step-increment: 5; value: 10; };
+                        focusable: false;
+                        focus-on-click: false;
+                      }
+
+                      Adw.SpinRow rate_count {
+                        title: "Clicks Count";
+                        adjustment: Gtk.Adjustment { lower: 1; upper: 1000; step-increment: 1; value: 10; };
+                        focusable: false;
+                        focus-on-click: false;
+                        [suffix]
+                        Label {
+                          label: _("per");
+                        }
+                        DropDown rate_unit {
+                          model: Gtk.StringList { strings [ "Second", "Minute", "Hour", "Day" ] };
+                          styles ["flat-dropdown"]
+                          margin-start: 3;
+                          margin-top: 5;
+                          margin-bottom: 5;
+                        }
+                      }
+
+                      Adw.SpinRow start_delay_row {
+                        title: "Start Delay (seconds)";
+                        adjustment: Gtk.Adjustment { lower: 0; upper: 60; step-increment: 1; value: 1; };
+                        focusable: false;
+                        focus-on-click: false;
+                      }
+                    }
+
+                    Adw.PreferencesGroup {
+                      title: "Execution Limits";
+                      Adw.ExpanderRow repeat_limit {
+                        title: "Limit Repeat Count";
+                        show-enable-switch: true;
+                        enable-expansion: false;
+
+                        Adw.SpinRow repeat_count_row {
+                          title: "Repeat Count";
+                          adjustment: Gtk.Adjustment { lower: 1; upper: 100000; step-increment: 1; value: 10; };
+                          focusable: false;
+                          focus-on-click: false;
+                        }
+                      }
+
+                      Adw.ExpanderRow has_time_limit {
+                        title: "Time Limit";
+                        show-enable-switch: true;
+                        enable-expansion: false;
+
+                        Adw.SpinRow time_limit_row {
+                          title: "Time Limit (seconds)";
+                          adjustment: Gtk.Adjustment { lower: 1; upper: 86400; step-increment: 5; value: 60; };
+                          focusable: false;
+                          focus-on-click: false;
                         }
                       }
                     }
                   }
                 }
-              }
 
-              // Page 2: Keyboard Action
-              Adw.Clamp {
-                orientation: horizontal;
-                valign: center;
-                margin-end: 10;
-                margin-top: 10;
-                margin-bottom: 10;
-                margin-start: 10;
-                hexpand: true;
-                Box {
-                  orientation: vertical;
-                  spacing: 12;
-                  Adw.PreferencesGroup {
-                    title: "Keyboard Input";
-                    Adw.ActionRow kb_key_row {
-                      title: "Target Key";
-                      activatable-widget: kb_key_button;
+                // Page 2: Advanced Options
+                Adw.Clamp {
+                  orientation: horizontal;
+                  valign: center;
+                  margin-end: 10;
+                  margin-top: 10;
+                  margin-bottom: 10;
+                  margin-start: 10;
+                  hexpand: true;
+                  Box {
+                    orientation: vertical;
+                    spacing: 12;
 
-                      [suffix]
-                      Gtk.Button kb_key_button {
-                        valign: center;
-                        tooltip-text: "Click to set a new key shortcut";
-                        styles ["flat"]
+                    Adw.PreferencesGroup {
+                      title: "Spoofing";
+                      Adw.ExpanderRow randomize_interval {
+                        title: "Randomize Speed";
+                        show-enable-switch: true;
+                        enable-expansion: false;
 
-                        child: Gtk.ShortcutLabel kb_shortcut_label {
-                          accelerator: "space";
-                          disabled-text: "Unassigned";
-                        };
+                        Adw.SpinRow random_spread_ms {
+                          title: "Random Spread (ms)";
+                          adjustment: Gtk.Adjustment { lower: 1; upper: 5000; step-increment: 5; value: 20; };
+                          focusable: false;
+                          focus-on-click: false;
+                        }
                       }
-                    }
 
-                    Adw.ComboRow kb_action_type_row {
-                      title: "Key Action";
-                      model: Gtk.StringList { strings [ "Press and Release", "Hold Key down", "Release Key" ] };
-                    }
-                  }
-                }
-              }
-
-              // Page 3: Macro Sequence
-              Adw.Clamp {
-                orientation: horizontal;
-                valign: center;
-                margin-end: 10;
-                margin-top: 10;
-                margin-bottom: 10;
-                margin-start: 10;
-                hexpand: true;
-                Box {
-                  Adw.PreferencesGroup {
-                    title: "Macro Sequencer";
-                    Adw.EntryRow macro_sequence_row {
-                      title: "Sequence";
-                      text: "ctrl+c, delay:50, v";
-                      tooltip-text: _("Available Syntax is: raw key events (a, space, enter), standard keyboard combinations joined by + (ctrl+alt+delete, shift+a), mouse clicks (click:left), coordinates (click:left:100:200), text typing (type:hello), and delay (delay:100)");
-                    }
-                    Adw.ActionRow record_macro_btn {
-                      title: "Record New Macro";
-                      activatable: true;
-                      icon-name: "media-record-symbolic";
-                      styles ["suggested-action"]
-                    }
-                  }
-                }
-              }
-            }
-
-            Adw.CarouselIndicatorDots {
-              carousel: carousel;
-              orientation: horizontal;
-              halign: center;
-              valign: end;
-            }
-          }
-
-          [center]
-          Gtk.Separator {
-            orientation: vertical;
-            margin-start: 24;
-            margin-end: 24;
-          }
-
-          [end]
-          Gtk.Box {
-            orientation: vertical;
-            valign: fill;
-            vexpand: true;
-            hexpand: true;
-            spacing: 16;
-            width-request: 320;
-            Label {
-              label: _("Configuration");
-              margin-top: 10;
-              margin-bottom: 10;
-              tooltip-text: _("Swipe or scroll to navigate available settings");
-              styles ["title-2"]
-            }
-
-            Adw.Carousel right_carousel {
-              vexpand: true;
-              hexpand: true;
-              orientation: horizontal;
-              allow-scroll-wheel: true;
-              allow-long-swipes: true;
-              spacing: 70;
-
-              // Page 1: Timing & Speed
-              Adw.Clamp {
-                orientation: horizontal;
-                valign: center;
-                margin-end: 10;
-                margin-top: 10;
-                margin-bottom: 10;
-                margin-start: 10;
-                hexpand: true;
-                Box {
-                  orientation: vertical;
-                  spacing: 12;
-
-                  Adw.PreferencesGroup {
-                    title: "Timing &amp; Speed";
-                    Adw.ComboRow timing_mode {
-                      title: "Timing Mode";
-                      model: Gtk.StringList { strings [ "Delay (Time between)", "Rate (Clicks per time)" ] };
-                    }
-
-                    Adw.SpinRow interval_ms {
-                      title: "Interval (ms)";
-                      adjustment: Gtk.Adjustment { lower: 1; upper: 100000; step-increment: 5; value: 10; };
-                      focusable: false;
-                      focus-on-click: false;
-                    }
-
-                    Adw.SpinRow rate_count {
-                      title: "Clicks Count";
-                      adjustment: Gtk.Adjustment { lower: 1; upper: 1000; step-increment: 1; value: 10; };
-                      focusable: false;
-                      focus-on-click: false;
-                      [suffix]
-                      Label {
-                        label: _("per");
-                      }
-                      DropDown rate_unit {
-                        model: Gtk.StringList { strings [ "Second", "Minute", "Hour", "Day" ] };
-                        styles ["flat-dropdown"]
-                        margin-start: 3;
-                        margin-top: 5;
-                        margin-bottom: 5;
-                      }
-                    }
-
-                    Adw.SpinRow start_delay_row {
-                      title: "Start Delay (seconds)";
-                      adjustment: Gtk.Adjustment { lower: 0; upper: 60; step-increment: 1; value: 1; };
-                      focusable: false;
-                      focus-on-click: false;
-                    }
-                  }
-
-                  Adw.PreferencesGroup {
-                    title: "Execution Limits";
-                    Adw.ExpanderRow repeat_limit {
-                      title: "Limit Repeat Count";
-                      show-enable-switch: true;
-                      enable-expansion: false;
-
-                      Adw.SpinRow repeat_count_row {
-                        title: "Repeat Count";
-                        adjustment: Gtk.Adjustment { lower: 1; upper: 100000; step-increment: 1; value: 10; };
-                        focusable: false;
-                        focus-on-click: false;
-                      }
-                    }
-
-                    Adw.ExpanderRow has_time_limit {
-                      title: "Time Limit";
-                      show-enable-switch: true;
-                      enable-expansion: false;
-
-                      Adw.SpinRow time_limit_row {
-                        title: "Time Limit (seconds)";
-                        adjustment: Gtk.Adjustment { lower: 1; upper: 86400; step-increment: 5; value: 60; };
+                      Adw.SpinRow duty_cycle {
+                        title: "Hold Duration (Duty %)";
+                        adjustment: Gtk.Adjustment { lower: 1; upper: 99; step-increment: 5; value: 50; };
                         focusable: false;
                         focus-on-click: false;
                       }
@@ -337,55 +418,17 @@ template $RepeatWindow: Adw.ApplicationWindow {
                 }
               }
 
-              // Page 2: Advanced Options
-              Adw.Clamp {
+              Adw.CarouselIndicatorDots {
+                carousel: right_carousel;
                 orientation: horizontal;
-                valign: center;
-                margin-end: 10;
-                margin-top: 10;
-                margin-bottom: 10;
-                margin-start: 10;
-                hexpand: true;
-                Box {
-                  orientation: vertical;
-                  spacing: 12;
-
-                  Adw.PreferencesGroup {
-                    title: "Spoofing";
-                    Adw.ExpanderRow randomize_interval {
-                      title: "Randomize Speed";
-                      show-enable-switch: true;
-                      enable-expansion: false;
-
-                      Adw.SpinRow random_spread_ms {
-                        title: "Random Spread (ms)";
-                        adjustment: Gtk.Adjustment { lower: 1; upper: 5000; step-increment: 5; value: 20; };
-                        focusable: false;
-                        focus-on-click: false;
-                      }
-                    }
-
-                    Adw.SpinRow duty_cycle {
-                      title: "Hold Duration (Duty %)";
-                      adjustment: Gtk.Adjustment { lower: 1; upper: 99; step-increment: 5; value: 50; };
-                      focusable: false;
-                      focus-on-click: false;
-                    }
-                  }
-                }
+                halign: center;
+                valign: end;
               }
             }
-
-            Adw.CarouselIndicatorDots {
-              carousel: right_carousel;
-              orientation: horizontal;
-              halign: center;
-              valign: end;
-            }
-          }
+          };
         }
 
-        Gtk.Box {
+        Gtk.Box start_box {
           orientation: vertical;
           halign: baseline_fill;
           valign: fill;
