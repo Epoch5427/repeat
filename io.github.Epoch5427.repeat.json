@@ -13,6 +13,8 @@
     	"--talk-name=org.freedesktop.portal.Desktop",
     	"--talk-name=org.freedesktop.portal.Flatpak",
     	"--filesystem=xdg-pictures",
+    	"--talk-name=org.kde.StatusNotifierWatcher",
+    	"--filesystem=xdg-run/tray-icon",
         "--socket=wayland"
     ],
     "cleanup" : [
@@ -38,6 +40,7 @@
                 }
             ]
         },
+        "shared-modules/libappindicator/libappindicator-gtk3-introspection-12.10.json",
         "python3-evdev.json",
         {
             "name" : "repeat",
@@ -50,9 +53,5 @@
                 }
             ]
         }
-    ],
-    "build-commands": [
-    "install -Dm644 data/io.github.Epoch5427.repeat.metainfo.xml.in /app/share/metainfo/io.github.Epoch5427.repeat.metainfo.xml",
-    "install -Dm644 data/io.github.Epoch5427.repeat.desktop.in /app/share/applications/io.github.Epoch5427.repeat.desktop"
-]
+    ]
 }

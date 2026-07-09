@@ -56,7 +56,7 @@ class RepeatApplication(Adw.Application):
         about = Adw.AboutDialog(application_name='Repeat',
                                 application_icon='io.github.Epoch5427.repeat',
                                 developer_name='Epoch',
-                                version='1.0.1',
+                                version='1.0.2',
                                 # Translators: Replace "translator-credits" with your name/username, and optionally an email or URL.
                                 translator_credits = _('translator-credits'),
                                 developers=['Epoch'],

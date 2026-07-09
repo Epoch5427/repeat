@@ -4,6 +4,10 @@ import random
 import time
 import json
 import os
+import sys
+import subprocess
+import gi
+gi.require_version('Adw', '1')
 from gi.repository import Adw
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -12,6 +16,67 @@ from gi.repository import GLib
 
 import evdev
 from evdev import UInput, ecodes
+
+# Embedded background Python script to manage the tray natively without crashing GTK4
+TRAY_SCRIPT = """
+import sys
+import gi
+
+# Require GTK3 exclusively for this isolated background process
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
+# Fallback gracefully between Ayatana and the older AppIndicator
+try:
+    gi.require_version('AyatanaAppIndicator3', '0.1')
+    from gi.repository import AyatanaAppIndicator3 as AppIndicator
+except ValueError:
+    gi.require_version('AppIndicator3', '0.1')
+    from gi.repository import AppIndicator3 as AppIndicator
+
+def on_show(item):
+    print("show")
+    sys.stdout.flush()
+
+def on_toggle(item):
+    print("toggle")
+    sys.stdout.flush()
+
+def on_quit(item):
+    print("quit")
+    sys.stdout.flush()
+    Gtk.main_quit()
+
+# Initialize the indicator.
+# We pass your app's exported ID. The host DE will automatically find your icon!
+indicator = AppIndicator.Indicator.new(
+    "repeat_tray",
+    "io.github.Epoch5427.repeat",
+    AppIndicator.IndicatorCategory.APPLICATION_STATUS
+)
+indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+
+# Build the GTK3 Menu
+menu = Gtk.Menu()
+
+item_show = Gtk.MenuItem(label="Show Autoclicker")
+item_show.connect('activate', on_show)
+menu.append(item_show)
+
+item_toggle = Gtk.MenuItem(label="Toggle Start/Stop")
+item_toggle.connect('activate', on_toggle)
+menu.append(item_toggle)
+
+item_quit = Gtk.MenuItem(label="Quit")
+item_quit.connect('activate', on_quit)
+menu.append(item_quit)
+
+menu.show_all()
+indicator.set_menu(menu)
+
+# Start the GTK loop for this subprocess
+Gtk.main()
+"""
 
 class KeyPickerDialog(Gtk.Window):
     def __init__(self, parent, on_key_picked_cb):
@@ -426,6 +491,52 @@ class RepeatWindow(Adw.ApplicationWindow):
 
         # Load Saved Settings
         self._load_settings()
+
+        self._init_tray_icon()
+
+    def _init_tray_icon(self):
+        try:
+            icon_path = "/app/share/icons/hicolor/256x256/apps/io.github.Epoch5427.repeat.png"
+
+            # Launch the isolated Python process
+            # ROUTE stderr to sys.stderr so any traceback prints in your terminal!
+            self._tray_process = subprocess.Popen(
+                [sys.executable, "-c", TRAY_SCRIPT],
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=sys.stderr,
+                text=True
+            )
+
+            # Spawn a non-blocking UI thread to listen for tray clicks
+            threading.Thread(target=self._read_tray_stdout, daemon=True).start()
+        except Exception as e:
+            print(f"Failed to start system tray: {e}")
+
+    def _read_tray_stdout(self):
+        while True:
+            if not hasattr(self, '_tray_process') or self._tray_process.poll() is not None:
+                break
+            try:
+                line = self._tray_process.stdout.readline()
+                if not line:
+                    break
+                command = line.strip()
+                # Schedule command to run on GTK's main loop safely
+                GLib.idle_add(self._handle_tray_command, command)
+            except Exception:
+                break
+
+    def _handle_tray_command(self, command):
+        if command == "show":
+            self.set_visible(True)
+            self.present()
+        elif command == "toggle":
+            is_active = self.toggle_run_btn.get_active()
+            self.toggle_run_btn.set_active(not is_active)
+        elif command == "quit":
+            self._real_quit()
+        return False
 
     def _async_init_uinput(self):
         try:
@@ -1574,10 +1685,35 @@ class RepeatWindow(Adw.ApplicationWindow):
             return None
 
     def _on_close_request(self, window):
+        # Check if the tray icon process is actually active and healthy
+        tray_active = False
+        if hasattr(self, '_tray_process') and self._tray_process:
+            if self._tray_process.poll() is None:
+                tray_active = True
+
+        # Fallback: If the tray isn't working, save settings and close normally
+        if not tray_active:
+            self._stop_execution()
+            self._close_portal_session()
+            self._save_settings()
+            return False # Let the default GTK handler destroy the window
+
+        # Otherwise, minimize to tray
+        self.set_visible(False)
+        self._save_settings()
+        return True # Stop GTK from destroying the window instance
+
+    def _real_quit(self):
+        # Actual application teardown triggered by the tray "Quit" button
         self._stop_execution()
         self._close_portal_session()
         self._save_settings()
-        return False
+
+        if hasattr(self, '_tray_process') and self._tray_process:
+            self._tray_process.terminate()
+            self._tray_process.wait()
+
+        self.destroy() # Actually destroy the window to exit the application
 
     def _close_portal_session(self):
         if self._dbus_conn and self._session_handle:
@@ -1607,6 +1743,3 @@ class RepeatWindow(Adw.ApplicationWindow):
     def _show_toast(self, message):
         toast = Adw.Toast.new(message)
         self.toast_overlay.add_toast(toast)
-
-
-

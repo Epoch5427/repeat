@@ -43,6 +43,7 @@
   - Option to randomize interval speeds slightly to emulate human interaction.
 - **Execution Limits**: Set limits based on overall loop iteration counts or time durations.
 - **Wayland Global Hotkeys**: Utilizes the Desktop Shortcuts Portal to safely register a global toggle shortcut (**F8**) that functions in the background on Wayland.
+- **Minimize Functionality**: Minimize the app and interact with it through it's system tray icon or the global shortcut.
 
 ---
 

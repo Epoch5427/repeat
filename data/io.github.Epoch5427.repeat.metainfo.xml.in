@@ -53,6 +53,12 @@
   </screenshots>
 
   <releases>
+    <release version="1.0.2" date="2026-06-29">
+      <url type="details">https://github.com/Epoch5427/repeat/releases/tag/v1.0.2</url>
+      <description translate="no">
+        <p>Added the for the application to minimize to system tray</p>
+      </description>
+    </release>
     <release version="1.0.1" date="2026-06-29">
       <url type="details">https://github.com/Epoch5427/repeat/releases/tag/v1.0.1</url>
       <description translate="no">
