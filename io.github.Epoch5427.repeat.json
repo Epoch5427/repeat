@@ -14,7 +14,6 @@
     	"--talk-name=org.freedesktop.portal.Flatpak",
     	"--filesystem=xdg-pictures",
     	"--talk-name=org.kde.StatusNotifierWatcher",
-    	"--filesystem=xdg-run/tray-icon",
         "--socket=wayland"
     ],
     "cleanup" : [
