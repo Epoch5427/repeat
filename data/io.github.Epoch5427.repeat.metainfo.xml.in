@@ -43,20 +43,37 @@
 
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/user-attachments/assets/3145d7c6-7884-43cb-a8e5-11f7c13f887f</image>
+      <image>https://github.com/user-attachments/assets/29b8a3d6-2f6b-42f9-9d1f-175952c59127</image>
       <caption>The main mouse settings and timing configuration panel.</caption>
     </screenshot>
     <screenshot type="default">
-      <image>https://github.com/user-attachments/assets/98f0fae3-6ff7-4904-8ecd-8b066c96606e</image>
+      <image>https://github.com/user-attachments/assets/c9800c3e-ad7c-4f66-8347-51f77bd7ad7a</image>
       <caption>The main keyboard settings and timing configuration panel.</caption>
     </screenshot>
   </screenshots>
 
   <releases>
+    <release version="1.1.0" date="2026-10-08">
+      <url type="details">https://github.com/Epoch5427/repeat/releases/tag/v1.1.0</url>
+      <description translate="no">
+        <p>Qol Improvements</p>
+        <ul>
+          <li>Revamped the UI to be more user-friendly</li>
+          <li>Updated to GNOME 51 Runtime</li>
+          <li>Updated evdev library</li>
+          <li>Fixed some bugs related to the system tray icon</li>
+          <li>Added a permission check to allow the coordinate picker to dynamically change methods based on the environment</li>
+          <li>Added the ability to click the textview while recording a macro to add a click</li>
+          <li>Refactored the code to make it easier to maintain</li>
+          <li>Transitioned to using gschema for saving widget states</li>
+          <li>The app now dynamically updates the shortcuts page based on the global shortcut set in the xdg portal</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.2" date="2026-06-29">
       <url type="details">https://github.com/Epoch5427/repeat/releases/tag/v1.0.2</url>
       <description translate="no">
-        <p>Added the for the application to minimize to system tray</p>
+        <p>Added the ability for the application to minimize to system tray</p>
       </description>
     </release>
     <release version="1.0.1" date="2026-06-29">

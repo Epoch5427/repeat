@@ -1,5 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="repeat">
-	<schema id="io.github.Epoch5427.repeat" path="/io/github/Epoch5427/repeat/">
-	</schema>
+  <schema id="io.github.Epoch5427.repeat" path="/io/github/Epoch5427/repeat/">
+
+    <!-- Mode Selection -->
+    <key name="active-mode" type="i">
+      <default>0</default>
+      <summary>Active mode index</summary>
+      <description>0: Mouse, 1: Keyboard, 2: Macro</description>
+    </key>
+
+    <!-- Mouse Settings -->
+    <key name="mouse-button" type="s">
+      <default>'left'</default>
+      <summary>Mouse button</summary>
+      <description>'left', 'middle', or 'right'</description>
+    </key>
+
+    <key name="click-type" type="u">
+      <default>0</default>
+      <summary>Click type index</summary>
+      <description>0: Single Click, 1: Double Click</description>
+    </key>
+
+    <key name="custom-location-enabled" type="b">
+      <default>false</default>
+      <summary>Custom coordinates enabled</summary>
+    </key>
+
+    <key name="mouse-pos-x" type="d">
+      <default>500.0</default>
+      <summary>X Coordinate</summary>
+    </key>
+
+    <key name="mouse-pos-y" type="d">
+      <default>500.0</default>
+      <summary>Y Coordinate</summary>
+    </key>
+
+    <!-- Keyboard Settings -->
+    <key name="target-key-name" type="s">
+      <default>'space'</default>
+      <summary>Target shortcut key</summary>
+    </key>
+
+    <key name="kb-action-type" type="u">
+      <default>0</default>
+      <summary>Keyboard action type index</summary>
+    </key>
+
+    <!-- Macro Settings -->
+    <key name="macro-text" type="s">
+      <default>'ctrl+c, delay:50, v'</default>
+      <summary>Macro key sequence</summary>
+    </key>
+
+    <!-- Timing & Speed -->
+    <key name="timing-mode" type="u">
+      <default>0</default>
+      <summary>Timing mode index</summary>
+      <description>0: Delay, 1: Rate</description>
+    </key>
+
+    <key name="interval-ms" type="d">
+      <default>10.0</default>
+      <summary>Interval delay in ms</summary>
+    </key>
+
+    <key name="rate-count" type="d">
+      <default>10.0</default>
+      <summary>Execution rate count</summary>
+    </key>
+
+    <key name="rate-unit" type="u">
+      <default>0</default>
+      <summary>Rate unit index</summary>
+      <description>0: Second, 1: Minute, 2: Hour, 3: Day</description>
+    </key>
+
+    <key name="start-delay" type="d">
+      <default>1.0</default>
+      <summary>Start delay countdown in seconds</summary>
+    </key>
+
+    <!-- Execution Limits -->
+    <key name="repeat-limit-enabled" type="b">
+      <default>false</default>
+      <summary>Repeat limit switch</summary>
+    </key>
+
+    <key name="repeat-count" type="d">
+      <default>10.0</default>
+      <summary>Total repeats limit</summary>
+    </key>
+
+    <key name="time-limit-enabled" type="b">
+      <default>false</default>
+      <summary>Time limit switch</summary>
+    </key>
+
+    <key name="time-limit" type="d">
+      <default>60.0</default>
+      <summary>Time limit in seconds</summary>
+    </key>
+
+    <!-- Humanization & Spoofing -->
+    <key name="randomize-interval" type="b">
+      <default>false</default>
+      <summary>Randomize interval switch</summary>
+    </key>
+
+    <key name="spread-ms" type="d">
+      <default>20.0</default>
+      <summary>Spread variance in ms</summary>
+    </key>
+
+    <key name="duty-cycle" type="d">
+      <default>50.0</default>
+      <summary>Duty cycle hold percentage</summary>
+    </key>
+
+  </schema>
 </schemalist>

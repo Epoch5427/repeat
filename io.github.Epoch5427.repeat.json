@@ -1,7 +1,7 @@
 {
     "id" : "io.github.Epoch5427.repeat",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "50",
+    "runtime-version" : "51",
     "sdk" : "org.gnome.Sdk",
     "command" : "repeat",
     "finish-args" : [
