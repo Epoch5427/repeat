@@ -17,13 +17,13 @@
 ---
 
 <p align="center">
-  <img width="1020" height="750" alt="Light Mode" src="https://github.com/user-attachments/assets/3145d7c6-7884-43cb-a8e5-11f7c13f887f" />
+  <img width="950" height="795" alt="Screenshot From 2026-10-08 21-09-21" src="https://github.com/user-attachments/assets/29b8a3d6-2f6b-42f9-9d1f-175952c59127" />
   <br>
   <em>The main mouse settings and timing configuration panel.</em>
 </p>
 
 <p align="center">
-  <img width="1020" height="750" alt="Dark Mode" src="https://github.com/user-attachments/assets/98f0fae3-6ff7-4904-8ecd-8b066c96606e" />
+  <img width="950" height="795" alt="Screenshot From 2026-10-08 21-10-18" src="https://github.com/user-attachments/assets/c9800c3e-ad7c-4f66-8347-51f77bd7ad7a" />
   <br>
   <em>The main keyboard settings and timing configuration panel.</em>
 </p>
