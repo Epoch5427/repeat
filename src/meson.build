@@ -4,18 +4,29 @@ gnome = import('gnome')
 python = import('python')
 
 # --- Blueprint setup ---
-blueprint_compiler = find_program('blueprint-compiler', required: true)   # NEW
+blueprint_compiler = find_program('blueprint-compiler', required: true)
 
 # Add your .blp files here
-blueprint_sources = files('window.blp')                              # NEW
+blueprint_sources = files(
+  'UI/shortcuts-dialog.blp',
+  'UI/window.blp',
+)
 
 # Compile .blp → .ui
-ui_files = custom_target('ui',                                            # NEW
-  input: blueprint_sources,                                               # NEW
-  output: 'window.ui',                                                    # NEW
-  command: [blueprint_compiler, 'compile', '@INPUT@'],                    # NEW
-  capture: true                                                           # NEW
-)                                                                         # NEW
+ui_files = custom_target('ui',
+  input: blueprint_sources,
+  output: [
+    'shortcuts-dialog.ui',
+    'window.ui',
+  ],
+  command: [
+    blueprint_compiler,
+    'batch-compile',
+    '@OUTDIR@',
+    meson.current_source_dir() / 'UI',
+    '@INPUT@',
+  ],
+)
 # --- end Blueprint setup ---
 
 gnome.compile_resources('repeat',
@@ -23,7 +34,15 @@ gnome.compile_resources('repeat',
   gresource_bundle: true,
   install: true,
   install_dir: pkgdatadir,
-  dependencies: ui_files,
+  source_dir: [
+    meson.current_source_dir(),          # Looks in src/
+    meson.current_build_dir(),           # Looks in build/src/ (for window.ui)
+    meson.project_build_root() / 'data', # Looks in build/data/ (for metainfo.xml)
+  ],
+  dependencies: [
+    ui_files,
+    appstream_file,                      # Ensures metainfo is generated first
+  ],
 )
 
 conf = configuration_data()
@@ -45,6 +64,21 @@ repeat_sources = [
   '__init__.py',
   'main.py',
   'window.py',
+  'emulator.py',
+  'macro_parser.py',
+  'models.py',
+  'portals.py',
+  'tray_indicator.py',
+  'worker.py',
 ]
 
 install_data(repeat_sources, install_dir: moduledir)
+
+ui_sources = [
+  'UI/__init__.py',
+  'UI/macro_recorder.py',
+  'UI/key_picker.py',
+  'UI/coordinate_picker.py',
+]
+
+install_data(ui_sources, install_dir: moduledir / 'UI')

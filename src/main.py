@@ -53,14 +53,9 @@ class RepeatApplication(Adw.Application):
 
     def on_about_action(self, *args):
         """Callback for the app.about action."""
-        about = Adw.AboutDialog(application_name='Repeat',
-                                application_icon='io.github.Epoch5427.repeat',
-                                developer_name='Epoch',
-                                version='1.0.2',
-                                # Translators: Replace "translator-credits" with your name/username, and optionally an email or URL.
-                                translator_credits = _('translator-credits'),
-                                developers=['Epoch'],
-                                copyright='© 2026 Epoch')
+        resource_path = ("/io/github/Epoch5427/Repeat/io.github.Epoch5427.repeat.metainfo.xml")
+        version = "1.1.0"
+        about = Adw.AboutDialog.new_from_appdata(resource_path, version)
         about.present(self.props.active_window)
 
     def on_preferences_action(self, widget, _):

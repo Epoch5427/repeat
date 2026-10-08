@@ -1,0 +1,33 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adw.ShortcutsDialog shortcuts_dialog {
+  Adw.ShortcutsSection {
+    title: _("General");
+
+    Adw.ShortcutsItem {
+      title: C_("shortcut window", "Show Shortcuts");
+      action-name: "app.shortcuts";
+    }
+
+    Adw.ShortcutsItem {
+      title: C_("shortcut window", "Quit");
+      action-name: "app.quit";
+    }
+  }
+
+  Adw.ShortcutsSection {
+    title: _("Application Controls");
+
+    Adw.ShortcutsItem {
+      title: _("Default Global Toggle");
+      accelerator: "F8";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Cancel / Close Dialogs");
+      accelerator: "Escape";
+    }
+  }
+}
+

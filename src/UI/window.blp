@@ -1,0 +1,532 @@
+using Gtk 4.0;
+using Adw 1;
+
+Gtk.SizeGroup column_size_group {
+  mode: horizontal;
+  widgets [ left_column, right_column ]
+}
+
+template $RepeatWindow: Adw.ApplicationWindow {
+  title: _("Repeat");
+  default-width: 900;
+  default-height: 745;
+  width-request: 342;
+  height-request: 120;
+
+  // Responsive layout: stacks columns vertically on narrow windows
+  Adw.Breakpoint {
+    condition ("max-width: 780sp")
+    setters {
+      columns_box.orientation: vertical;
+      separator.visible: false;
+      mode_switcher.policy: narrow;
+      carousel.spacing: 150;
+    }
+  }
+
+  // Compact mini-mode: collapse settings when resized short, leaving only the start controls
+  Adw.Breakpoint {
+    condition ("max-height: 250sp")
+    setters {
+      scrolled_window.visible: false;
+      toggle_label.visible: false;
+      toggle_run_btn.valign: center;
+    }
+  }
+
+  content: Adw.ToastOverlay toast_overlay {
+    child: Adw.ToolbarView {
+
+      [top]
+      Adw.HeaderBar {
+        title-widget: Adw.WindowTitle {
+          title: _("Repeat");
+          subtitle: _("Wayland-First Autoclicker");
+        };
+
+        [end]
+        Gtk.MenuButton {
+          icon-name: "open-menu-symbolic";
+          tooltip-text: _("Main Menu");
+          popover: Gtk.PopoverMenu primary_menu_popover {
+            menu-model: primary_menu;
+          };
+        }
+      }
+
+      content: Gtk.Box {
+        orientation: vertical;
+
+        Adw.Banner permission_banner {
+          title: _("Uinput permissions missing (/dev/uinput).");
+          button-label: _("Help");
+        }
+
+        Adw.Banner shortcut_collision_banner {
+          title: _("Global Shortcut (F8) conflicts with another application or was rejected.");
+          button-label: _("Retry");
+          revealed: false;
+        }
+
+        Gtk.ScrolledWindow scrolled_window {
+          vexpand: true;
+          hexpand: true;
+          hscrollbar-policy: never;
+          vscrollbar-policy: automatic;
+
+          child: Adw.Clamp {
+            maximum-size: 920;
+            tightening-threshold: 720;
+            margin-top: 18;
+            margin-bottom: 24;
+            margin-start: 16;
+            margin-end: 16;
+
+            child: Gtk.Box columns_box {
+              orientation: horizontal;
+              spacing: 20;
+
+              // ==========================================
+              // LEFT COLUMN: TARGET SELECTION & SWIPEABLE TABS
+              // ==========================================
+              Gtk.Box left_column {
+                orientation: vertical;
+                spacing: 12;
+                hexpand: true;
+
+                // Mode Switcher Header
+                Adw.ViewSwitcher mode_switcher {
+                  stack: mode_stack;
+                  policy: narrow;
+                  halign: center;
+                  margin-bottom: 8;
+                }
+
+                Adw.ViewStack mode_stack {
+                  visible: false;
+
+                  Adw.ViewStackPage {
+                    name: "mouse";
+                    title: _("Mouse");
+                    icon-name: "input-mouse-symbolic";
+                    child: Gtk.Box {};
+                  }
+
+                  Adw.ViewStackPage {
+                    name: "keyboard";
+                    title: _("Keyboard");
+                    icon-name: "input-keyboard-symbolic";
+                    child: Gtk.Box {};
+                  }
+
+                  Adw.ViewStackPage {
+                    name: "macro";
+                    title: _("Macro");
+                    icon-name: "media-playlist-repeat-symbolic";
+                    child: Gtk.Box {};
+                  }
+                }
+
+                // Swipeable Carousel
+                Adw.Carousel carousel {
+                  vexpand: true;
+                  allow-mouse-drag: true;
+                  allow-scroll-wheel: false;
+                  allow-long-swipes: false;
+                  spacing: 24;
+                  width-request: 310;
+
+                  // ---------------- PAGE 1: MOUSE ----------------
+                  Gtk.Box {
+                    orientation: vertical;
+                    spacing: 12;
+                    margin-start: 2;
+                    margin-end: 2;
+
+                    Adw.PreferencesGroup {
+                      title: _("Mouse Emulation");
+
+                      // 1. Full-width mouse button selector with larger icons
+                      Adw.PreferencesRow {
+                        activatable: false;
+                        focusable: false;
+
+                        Gtk.Box {
+                          margin-top: 8;
+                          margin-bottom: 8;
+                          margin-start: 12;
+                          margin-end: 12;
+                          styles ["linked"]
+                          homogeneous: true;
+                          hexpand: true;
+
+                          ToggleButton btn_left_click {
+                            active: true;
+                            tooltip-text: _("Left Click");
+
+                            child: Gtk.Image {
+                              icon-name: "mouse-primary-click-symbolic";
+                              pixel-size: 20;
+                              margin-top: 3;
+                            };
+                          }
+
+                          ToggleButton btn_middle_click {
+                            group: btn_left_click;
+                            tooltip-text: _("Middle Click");
+
+                            child: Gtk.Image {
+                              icon-name: "mouse-middle-click-symbolic";
+                              pixel-size: 20;
+                              margin-top: 3;
+                            };
+                          }
+
+                          ToggleButton btn_right_click {
+                            group: btn_left_click;
+                            tooltip-text: _("Right Click");
+
+                            child: Gtk.Image {
+                              icon-name: "mouse-secondary-click-symbolic";
+                              pixel-size: 20;
+                              margin-top: 3;
+                            };
+                          }
+                        }
+                      }
+
+                      // 2. Segmented Single vs. Double Click row
+                      Adw.ActionRow {
+                        title: _("Click Type");
+
+                        [suffix]
+                        Gtk.Box {
+                          valign: center;
+                          styles ["linked"]
+
+                          ToggleButton btn_single_click {
+                            active: true;
+                            label: _("Single");
+                          }
+
+                          ToggleButton btn_double_click {
+                            group: btn_single_click;
+                            label: _("Double");
+                          }
+                        }
+                      }
+                    }
+
+                    Adw.PreferencesGroup {
+                      title: _("Cursor Position");
+
+                      Adw.ExpanderRow custom_location_row {
+                        title: _("Custom Target Coordinates");
+                        subtitle: _("Click at a fixed screen position rather than cursor location");
+                        show-enable-switch: true;
+                        enable-expansion: false;
+
+                        Adw.SpinRow mouse_pos_x {
+                          title: _("X Coordinate");
+                          adjustment: Gtk.Adjustment { lower: 0; upper: 10000; step-increment: 10; value: 500; };
+                        }
+
+                        Adw.SpinRow mouse_pos_y {
+                          title: _("Y Coordinate");
+                          adjustment: Gtk.Adjustment { lower: 0; upper: 10000; step-increment: 10; value: 500; };
+                        }
+
+                        Adw.ActionRow pick_position_row {
+                          title: _("Pick from Screen");
+                          subtitle: _("Takes a momentary screenshot to select coordinates");
+                          activatable: true;
+
+                          [suffix]
+                          Gtk.Button {
+                            valign: center;
+                            icon-name: "find-location-symbolic";
+                            styles ["flat"]
+                          }
+                        }
+                      }
+                    }
+                  }
+
+                  // ---------------- PAGE 2: KEYBOARD ----------------
+                  Gtk.Box {
+                    orientation: vertical;
+                    spacing: 12;
+                    margin-start: 2;
+                    margin-end: 2;
+
+                    Adw.PreferencesGroup {
+                      title: _("Key Emulation");
+
+                      Adw.ActionRow kb_key_row {
+                        title: _("Target Key");
+                        subtitle: _("Click button to record a shortcut or key");
+                        activatable-widget: kb_key_button;
+
+                        [suffix]
+                        Gtk.Button kb_key_button {
+                          valign: center;
+                          styles ["flat"]
+
+                          child: Gtk.ShortcutLabel kb_shortcut_label {
+                            accelerator: "space";
+                            disabled-text: _("Unassigned");
+                          };
+                        }
+                      }
+
+                      Adw.ComboRow kb_action_type_row {
+                        title: _("Key Action");
+                        model: Gtk.StringList { strings [ "Press and Release", "Hold Key Down", "Release Key" ] };
+                      }
+                    }
+                  }
+
+                  // ---------------- PAGE 3: MACRO ----------------
+                  Gtk.Box {
+                    orientation: vertical;
+                    spacing: 12;
+                    margin-start: 2;
+                    margin-end: 2;
+
+                    Adw.PreferencesGroup {
+                      title: _("Macro Sequence");
+
+                      Adw.EntryRow macro_sequence_row {
+                        title: _("Key Sequence");
+                        text: "ctrl+c, delay:50, v";
+                      }
+
+                      Adw.ActionRow record_macro_btn {
+                        title: _("Record Macro");
+                        subtitle: _("Capture keystrokes, clicks, and timing interactively");
+                        activatable: true;
+
+                        [prefix]
+                        Gtk.Image {
+                          icon-name: "media-record-symbolic";
+                          styles ["error"]
+                        }
+
+                        [suffix]
+                        Gtk.Image {
+                          icon-name: "go-next-symbolic";
+                        }
+                      }
+                    }
+
+                    Adw.PreferencesGroup {
+                      title: _("Syntax Guide");
+
+                      Adw.ActionRow {
+                        title: _("Delays");
+                        subtitle: "delay:100 (in milliseconds)";
+                      }
+                      Adw.ActionRow {
+                        title: _("Clicks");
+                        subtitle: "click:left, click:right, click:middle";
+                      }
+                      Adw.ActionRow {
+                        title: _("Combos");
+                        subtitle: "ctrl+alt+t, shift+enter";
+                      }
+                    }
+                  }
+                }
+              }
+
+              // Divider between columns
+              Gtk.Separator separator {
+                orientation: vertical;
+              }
+
+              // ==========================================
+              // RIGHT COLUMN: TIMING, LIMITS & SPOOFING
+              // ==========================================
+              Gtk.Box right_column {
+                orientation: vertical;
+                spacing: 12;
+                hexpand: true;
+
+                // 1. Timing & Speed
+                Adw.PreferencesGroup {
+                  title: _("Timing and Speed");
+
+                  // Segmented Delay vs. Rate mode
+                  Adw.ActionRow {
+                    title: _("Timing Mode");
+
+                    [suffix]
+                    Gtk.Box {
+                      valign: center;
+                      styles ["linked"]
+
+                      ToggleButton btn_timing_delay {
+                        active: true;
+                        label: _("Delay");
+                      }
+
+                      ToggleButton btn_timing_rate {
+                        group: btn_timing_delay;
+                        label: _("Rate");
+                      }
+                    }
+                  }
+
+                  Adw.SpinRow interval_ms {
+                    title: _("Interval Delay (ms)");
+                    subtitle: _("Time between each execution");
+                    adjustment: Gtk.Adjustment { lower: 1; upper: 100000; step-increment: 5; value: 10; };
+                  }
+
+                  Adw.SpinRow rate_count {
+                    title: _("Execution Rate");
+                    adjustment: Gtk.Adjustment { lower: 1; upper: 1000; step-increment: 1; value: 10; };
+
+                    [suffix]
+                    Gtk.Box {
+                      valign: center;
+                      spacing: 6;
+
+                      Gtk.Label {
+                        label: _("per");
+                        styles ["dim-label"]
+                      }
+
+                      DropDown rate_unit {
+                        model: Gtk.StringList { strings [ "Second", "Minute", "Hour", "Day" ] };
+                        styles ["flat-dropdown"]
+                      }
+                    }
+                  }
+
+                  Adw.SpinRow start_delay_row {
+                    title: _("Start Delay (seconds)");
+                    subtitle: _("Wait before starting execution");
+                    adjustment: Gtk.Adjustment { lower: 0; upper: 60; step-increment: 1; value: 1; };
+                  }
+                }
+
+                // 2. Execution Limits
+                Adw.PreferencesGroup {
+                  title: _("Execution Limits");
+
+                  Adw.ExpanderRow repeat_limit {
+                    title: _("Limit Repeat Count");
+                    subtitle: _("Stop after a specified number of executions");
+                    show-enable-switch: true;
+                    enable-expansion: false;
+
+                    Adw.SpinRow repeat_count_row {
+                      title: _("Total Repeats");
+                      adjustment: Gtk.Adjustment { lower: 1; upper: 100000; step-increment: 1; value: 10; };
+                    }
+                  }
+
+                  Adw.ExpanderRow has_time_limit {
+                    title: _("Limit Duration");
+                    subtitle: _("Stop automatically after a period of time");
+                    show-enable-switch: true;
+                    enable-expansion: false;
+
+                    Adw.SpinRow time_limit_row {
+                      title: _("Time Limit (seconds)");
+                      adjustment: Gtk.Adjustment { lower: 1; upper: 86400; step-increment: 5; value: 60; };
+                    }
+                  }
+                }
+
+                // 3. Humanization & Anti-Detection
+                Adw.PreferencesGroup {
+                  title: _("Humanization and Spoofing");
+
+                  Adw.ExpanderRow randomize_interval {
+                    title: _("Randomize Interval (Jitter)");
+                    subtitle: _("Adds random timing variation to avoid bot detection");
+                    show-enable-switch: true;
+                    enable-expansion: false;
+
+                    Adw.SpinRow random_spread_ms {
+                      title: _("Spread Variance (± ms)");
+                      adjustment: Gtk.Adjustment { lower: 1; upper: 5000; step-increment: 5; value: 20; };
+                    }
+                  }
+
+                  Adw.SpinRow duty_cycle {
+                    title: _("Hold Duration");
+                    subtitle: _("Percentage of interval that the button/key stays held down");
+                    adjustment: Gtk.Adjustment { lower: 1; upper: 99; step-increment: 5; value: 50; };
+                  }
+                }
+              }
+            }
+          ;}
+        ;}
+      };
+
+      // ==========================================
+      // PERSISTENT BOTTOM CONTROL BAR
+      // ==========================================
+      [bottom]
+      Gtk.ActionBar {
+        valign: fill;
+
+        [center]
+        Gtk.Box {
+          orientation: vertical;
+          spacing: 6;
+          halign: center;
+          margin-top: 6;
+          margin-bottom: 6;
+          valign: fill;
+
+          Gtk.ToggleButton toggle_run_btn {
+            label: _("Start");
+            sensitive: false;
+            styles ["suggested-action", "pill"]
+            width-request: 220;
+            height-request: 44;
+          }
+
+          Gtk.Box toggle_label {
+            orientation: horizontal;
+            spacing: 6;
+            halign: center;
+
+            Gtk.Label toggle_with {
+              label: _("Toggle with");
+              visible: false;
+              styles ["dim-label", "caption"]
+            }
+
+            Gtk.ShortcutLabel toggle_key {
+              accelerator: "";
+              disabled-text: _("Unassigned");
+            }
+          }
+        }
+      }
+    }
+  ;}
+;}
+
+menu primary_menu {
+  section {
+    item {
+      label: _("Keyboard Shortcuts");
+      action: "app.shortcuts";
+    }
+    item {
+      label: _("_About Repeat");
+      action: "app.about";
+    }
+    item {
+      label: _("Quit");
+      action: "app.quit";
+    }
+  }
+}

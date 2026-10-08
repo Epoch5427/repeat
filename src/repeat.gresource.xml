@@ -4,6 +4,12 @@
     <file preprocess="xml-stripblanks">window.ui</file>
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
   </gresource>
+
+    <!-- Appstream Data & About Dialog -->
+  <gresource prefix="/io/github/Epoch5427/Repeat">
+    <file preprocess="xml-stripblanks">io.github.Epoch5427.repeat.metainfo.xml</file>
+  </gresource>
+
     <gresource prefix="/io/github/Epoch5427/repeat/icons/scalable/actions">
     <file alias="mouse-primary-click-symbolic.svg">../data/icons/scalable/actions/mouse-primary-click-symbolic.svg</file>
   </gresource>
